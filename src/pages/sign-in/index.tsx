@@ -9,6 +9,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
+  // TODO: use try catch, error handling
   const handleSignIn = async () => {
     const { error, data } = await supabase.auth.signInWithPassword({
       email,
