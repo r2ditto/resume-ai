@@ -1,15 +1,41 @@
 import React from "react";
 import Image from "next/image";
-import { Icon } from "@chakra-ui/react";
+import {
+  MenuContent,
+  MenuItem,
+  MenuRoot,
+  MenuTrigger,
+} from "@/components/ui/menu";
 
 import { IoAdd } from "react-icons/io5";
-import { Container, Flex, Button, Group } from "@chakra-ui/react";
+import {
+  Container,
+  Flex,
+  Button,
+  Group,
+  Icon,
+  VStack,
+  Separator,
+} from "@chakra-ui/react";
 
 import Logo from "/public/logo.svg";
+import { supabase } from "@/utils/supabase";
+import { useRouter } from "next/router";
 
 const MainButtons = ["Resume", "Cover Letter", "Create"];
 
 export default function Header() {
+  const router = useRouter();
+
+  const handleLogOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push("/sign-in");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <Container fluid px={6} py={4}>
       <Flex>
@@ -38,15 +64,34 @@ export default function Header() {
           </Group>
 
           <Group>
-            <Button
-              variant="ghost"
-              size="xl"
-              borderRadius="full"
-              fontSize={25}
-              fontWeight={500}
-            >
-              User
-            </Button>
+            <MenuRoot positioning={{ placement: "bottom-end" }}>
+              <MenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  borderRadius="full"
+                  size="xl"
+                  fontSize={25}
+                  fontWeight={500}
+                >
+                  User
+                </Button>
+              </MenuTrigger>
+              <MenuContent px={3} py={5} borderRadius={10} minW={300}>
+                <VStack gap={3}>
+                  <MenuItem value="account" fontSize={20}>
+                    Account
+                  </MenuItem>
+                  <Separator />
+                  <MenuItem value="settings" fontSize={20}>
+                    Settings
+                  </MenuItem>
+                  <Separator />
+                  <MenuItem value="logout" fontSize={20} onClick={handleLogOut}>
+                    Log out
+                  </MenuItem>
+                </VStack>
+              </MenuContent>
+            </MenuRoot>
           </Group>
         </Flex>
       </Flex>
