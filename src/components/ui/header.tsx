@@ -36,6 +36,29 @@ export default function Header() {
     }
   };
 
+  const handleCreate = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("resumes")
+        .insert([
+          {
+            title: "Untitled Resume",
+            template_id: "default",
+            personal_info: {},
+            sections: {},
+          },
+        ])
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      router.push(`/resumes/${data.id}`);
+    } catch (error) {
+      console.error("Error creating resume:", error);
+    }
+  };
+
   return (
     <Container fluid px={6} py={4}>
       <Flex>
@@ -47,6 +70,7 @@ export default function Header() {
               <Button
                 key={label}
                 variant={label === "Create" ? "solid" : "ghost"}
+                onClick={label === "Create" ? handleCreate : undefined}
                 size="xl"
                 borderRadius="full"
                 fontSize={25}
