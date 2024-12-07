@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { supabase } from "./src/utils/supabase"; // Adjust the path as necessary
+import { supabase } from "./src/utils/supabase";
 
 export async function middleware(req: NextRequest) {
   const {
@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
 
   if (!session) {
     const url = req.nextUrl.clone();
-    url.pathname = "/sign-in"; // Redirect to the sign-in page
+    url.pathname = "/sign-in";
     return NextResponse.redirect(url);
   }
 
@@ -18,5 +18,5 @@ export async function middleware(req: NextRequest) {
 
 // Specify the paths where the middleware should run
 export const config = {
-  matcher: ["/protected-route", "/another-protected-route"], // Add your protected routes here
+  matcher: ["/dashboard", "/resumes"], // Add your protected routes here
 };
