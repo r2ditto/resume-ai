@@ -1,13 +1,24 @@
+import { ReactNode, ReactElement } from "react";
 import type { AppProps } from "next/app";
+import { NextPage } from "next";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 import { UserProvider } from "@/contexts/UserContext";
 
-export default function App({ Component, pageProps }: AppProps) {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+export default function App({ Component, pageProps }: AppPropsWithLayout) {
+  const getLayout = Component.getLayout ?? ((page) => page);
+
   return (
     <ChakraProvider value={defaultSystem}>
-      <UserProvider>
-        <Component {...pageProps} />
-      </UserProvider>
+      <UserProvider>{getLayout(<Component {...pageProps} />)}</UserProvider>
     </ChakraProvider>
   );
 }
