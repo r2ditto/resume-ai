@@ -1,19 +1,22 @@
 import React, { ReactNode } from "react";
-import { Flex, Box } from "@chakra-ui/react";
+import { Flex, Box, Container } from "@chakra-ui/react";
 
 import Header from "../ui/header";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default function DashboardLayout({
+  children,
+  isFullWidth = false,
+}: {
+  children: ReactNode;
+  isFullWidth?: boolean;
+}) {
   return (
     <>
       <Header />
-      <Flex height="100vh">
-        {/* Main Content */}
-        <Box flex="1" p={4}>
-          <Box bg="gray.100" p={4} borderRadius="md">
-            {children}
-          </Box>
-        </Box>
+      <Flex height="100vh" py={10}>
+        <Container fluid={isFullWidth}>
+          <Box py={5}>{children}</Box>
+        </Container>
       </Flex>
     </>
   );
