@@ -132,7 +132,7 @@ export default function ResumePage() {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            onClick={() => handleSectionClick(item)} // Added onClick event
+                            onClick={() => handleSectionClick(item)}
                           >
                             <Flex gap="2" alignItems="center">
                               {itemIcons[item as keyof typeof itemIcons]}
@@ -154,10 +154,7 @@ export default function ResumePage() {
       {/* Resume */}
       <GridItem>
         <Card.Root variant="elevated">
-          <Card.Body>
-            <Text>{activeSection}</Text>
-            {renderForm()}
-          </Card.Body>
+          <Card.Body>{renderForm()}</Card.Body>
         </Card.Root>
       </GridItem>
 
