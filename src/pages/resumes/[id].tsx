@@ -18,6 +18,13 @@ import {
   TbUserCircle,
 } from "react-icons/tb";
 import PersonalDetailsForm from "@/components/forms/personal-details-form";
+import ContactInformationForm from "@/components/forms/contact-information-form";
+import ProfessionalSummaryForm from "@/components/forms/professional-summary-form";
+import LinksForm from "@/components/forms/links-form";
+import CertificationsForm from "@/components/forms/certifications-form";
+import SkillsForm from "@/components/forms/skills-form";
+import EducationForm from "@/components/forms/education-form";
+import EmploymentHistoryForm from "@/components/forms/employment-history-form";
 
 enum ResumeSections {
   PersonalInformation = "Personal Information",
@@ -50,6 +57,20 @@ export default function ResumePage() {
     switch (activeSection) {
       case ResumeSections.PersonalInformation:
         return <PersonalDetailsForm />;
+      case ResumeSections.ContactInformation:
+        return <ContactInformationForm />;
+      case ResumeSections.ProfessionalSummary:
+        return <ProfessionalSummaryForm />;
+      case ResumeSections.Links:
+        return <LinksForm />;
+      case ResumeSections.EmploymentHistory:
+        return <EmploymentHistoryForm />;
+      case ResumeSections.Education:
+        return <EducationForm />;
+      case ResumeSections.Certifications:
+        return <CertificationsForm />;
+      case ResumeSections.Skills:
+        return <SkillsForm />;
       default:
         return null;
     }
