@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Heading, Input, SimpleGrid, Text } from "@chakra-ui/react";
 import { Field } from "../ui/field";
 import { supabase } from "@/utils/supabase";
@@ -14,6 +14,29 @@ export default function PersonalDetailsForm({
   const [lastName, setLastName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const { user } = useUser();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await supabase
+          .from("resumes")
+          .select("personal_info")
+          .eq("id", resumeId)
+          .eq("user_id", user?.id)
+          .single();
+
+        if (data) {
+          setFirstName(data.personal_info.firstName);
+          setLastName(data.personal_info.lastName);
+          setJobTitle(data.personal_info.jobTitle);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [resumeId, user?.id]);
 
   const saveToSupabase = useCallback(
     debounce(async (data) => {
