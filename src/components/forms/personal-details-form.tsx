@@ -4,7 +4,10 @@ import { Field } from "../ui/field";
 import { supabase } from "@/utils/supabase";
 import { debounce } from "@/utils/helper";
 import { useUser } from "@/contexts/UserContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Toaster, toaster } from "@/components/ui/toaster";
 
+// TODO: Optimistic updates, Error handling, Loading state
 export default function PersonalDetailsForm({
   resumeId,
 }: {
@@ -14,65 +17,84 @@ export default function PersonalDetailsForm({
   const [lastName, setLastName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const { user } = useUser();
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["resumeData", resumeId, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("resumes")
+        .select("personal_info")
+        .eq("id", resumeId)
+        .eq("user_id", user?.id)
+        .single();
+      return data;
+    },
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await supabase
-          .from("resumes")
-          .select("personal_info")
-          .eq("id", resumeId)
-          .eq("user_id", user?.id)
-          .single();
+    if (data) {
+      setFirstName(data.personal_info.firstName);
+      setLastName(data.personal_info.lastName);
+      setJobTitle(data.personal_info.jobTitle);
+    }
+  }, [data]);
 
-        if (data) {
-          setFirstName(data.personal_info.firstName);
-          setLastName(data.personal_info.lastName);
-          setJobTitle(data.personal_info.jobTitle);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  const mutation = useMutation({
+    mutationFn: async (data: {
+      firstName: string;
+      lastName: string;
+      jobTitle: string;
+    }) => {
+      if (!user) throw new Error("User not authenticated");
 
-    fetchData();
-  }, [resumeId, user?.id]);
+      const { error } = await supabase
+        .from("resumes")
+        .update({ personal_info: data })
+        .eq("id", resumeId)
+        .eq("user_id", user.id);
 
-  const saveToSupabase = useCallback(
-    debounce(async (data) => {
-      if (!user) return;
-      try {
-        const { error } = await supabase
-          .from("resumes")
-          .update({ personal_info: data })
-          .eq("id", resumeId)
-          .eq("user_id", user.id);
-        if (error) throw error;
-        console.log("Data saved successfully");
-      } catch (error) {
-        console.error("Error saving data:", error);
-      }
-    }, 1000),
-    [resumeId, user?.id]
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toaster.create({
+        title: "Personal details updated successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      console.error(error);
+      toaster.create({
+        title: "Error updating personal details",
+        type: "error",
+      });
+    },
+  });
+
+  const debouncedMutate = useCallback(
+    debounce((data) => mutation.mutate(data), 1000),
+    [mutation]
   );
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFirstName(value);
-    saveToSupabase({ firstName: value, lastName, jobTitle });
+    debouncedMutate({ firstName: value, lastName, jobTitle });
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLastName(value);
-    saveToSupabase({ firstName, lastName: value, jobTitle });
+    debouncedMutate({ firstName, lastName: value, jobTitle });
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setJobTitle(value);
-    saveToSupabase({ firstName, lastName, jobTitle: value });
+    debouncedMutate({ firstName, lastName, jobTitle: value });
   };
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <>
@@ -108,6 +130,8 @@ export default function PersonalDetailsForm({
           />
         </Field>
       </SimpleGrid>
+
+      <Toaster />
     </>
   );
 }
