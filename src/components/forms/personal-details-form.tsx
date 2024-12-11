@@ -1,34 +1,54 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Heading, Input, SimpleGrid, Text } from "@chakra-ui/react";
 import { Field } from "../ui/field";
+import { supabase } from "@/utils/supabase";
+import { debounce } from "@/utils/helper";
+import { useUser } from "@/contexts/UserContext";
 
-export default function PersonalDetailsForm() {
+export default function PersonalDetailsForm({
+  resumeId,
+}: {
+  resumeId: string;
+}) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
+  const { user } = useUser();
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      updatePersonalDetails();
-    }, 1000);
-
-    return () => clearTimeout(handler);
-  }, [firstName, lastName, jobTitle]);
+  const saveToSupabase = useCallback(
+    debounce(async (data) => {
+      if (!user) return;
+      try {
+        const { error } = await supabase
+          .from("resumes")
+          .update({ personal_info: data })
+          .eq("id", resumeId)
+          .eq("user_id", user.id);
+        if (error) throw error;
+        console.log("Data saved successfully");
+      } catch (error) {
+        console.error("Error saving data:", error);
+      }
+    }, 1000),
+    [resumeId, user?.id]
+  );
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFirstName(e.target.value);
+    const value = e.target.value;
+    setFirstName(value);
+    saveToSupabase({ firstName: value, lastName, jobTitle });
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLastName(e.target.value);
+    const value = e.target.value;
+    setLastName(value);
+    saveToSupabase({ firstName, lastName: value, jobTitle });
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobTitle(e.target.value);
-  };
-
-  const updatePersonalDetails = () => {
-    console.log("Updating personal details...");
+    const value = e.target.value;
+    setJobTitle(value);
+    saveToSupabase({ firstName, lastName, jobTitle: value });
   };
 
   return (

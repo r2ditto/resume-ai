@@ -25,6 +25,7 @@ import CertificationsForm from "@/components/forms/certifications-form";
 import SkillsForm from "@/components/forms/skills-form";
 import EducationForm from "@/components/forms/education-form";
 import EmploymentHistoryForm from "@/components/forms/employment-history-form";
+import { useRouter } from "next/router";
 
 enum ResumeSections {
   PersonalInformation = "Personal Information",
@@ -52,11 +53,13 @@ export default function ResumePage() {
   const [activeSection, setActiveSection] = useState<ResumeSections>(
     ResumeSections.PersonalInformation
   );
+  const router = useRouter();
+  const { id: resumeId } = router.query;
 
   const renderForm = () => {
     switch (activeSection) {
       case ResumeSections.PersonalInformation:
-        return <PersonalDetailsForm />;
+        return <PersonalDetailsForm resumeId={resumeId as string} />;
       case ResumeSections.ContactInformation:
         return <ContactInformationForm />;
       case ResumeSections.ProfessionalSummary:
