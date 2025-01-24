@@ -1,32 +1,39 @@
 import React from "react";
-import dynamic from "next/dynamic";
-import { Document, Page, View, Text as PdfText } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  View,
+  Text as PdfText,
+  StyleSheet,
+} from "@react-pdf/renderer";
 
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
-  { ssr: false }
-);
+const styles = StyleSheet.create({
+  body: {
+    paddingTop: 35,
+    paddingBottom: 65,
+    paddingHorizontal: 200,
+  },
+  resumeHeading: {
+    fontSize: 20,
+    fontWeight: "bold",
+    display: "flex",
+  },
+});
 
+// TODO: document re-computation can be an expensive operation
 export default function ResumePreview({ resumeData }: { resumeData: any }) {
   return (
     <>
-      <PDFViewer>
-        <Document>
-          <Page size="A4" style={{ border: "none" }}>
-            <View>
-              <PdfText>
-                First Name: {resumeData?.personal_info?.firstName}
-              </PdfText>
-              <PdfText>
-                Last Name: {resumeData?.personal_info?.lastName}
-              </PdfText>
-              <PdfText>
-                Job Title: {resumeData?.personal_info?.jobTitle}
-              </PdfText>
-            </View>
-          </Page>
-        </Document>
-      </PDFViewer>
+      <Document>
+        <Page size="A4" style={styles.body}>
+          <View>
+            <PdfText style={styles.resumeHeading}>
+              {`${resumeData?.personal_info?.firstName} ${resumeData?.personal_info?.lastName}`}
+            </PdfText>
+            <PdfText>{resumeData?.personal_info?.jobTitle}</PdfText>
+          </View>
+        </Page>
+      </Document>
     </>
   );
 }
