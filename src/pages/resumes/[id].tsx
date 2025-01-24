@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card, Flex, Grid, GridItem, List, Text } from "@chakra-ui/react";
+import { Card, Flex, Grid, GridItem, List } from "@chakra-ui/react";
 import React, { ReactElement, useState } from "react";
 import {
   DragDropContext,
@@ -26,6 +26,10 @@ import SkillsForm from "@/components/forms/skills-form";
 import EducationForm from "@/components/forms/education-form";
 import EmploymentHistoryForm from "@/components/forms/employment-history-form";
 import { useRouter } from "next/router";
+import ResumePreview from "@/components/ui/resume-preview";
+import { useUser } from "@/contexts/UserContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/utils/supabase";
 
 enum ResumeSections {
   PersonalInformation = "Personal Information",
@@ -55,11 +59,30 @@ export default function ResumePage() {
   );
   const router = useRouter();
   const { id: resumeId } = router.query;
+  const { user } = useUser();
+  const { data, isLoading } = useQuery({
+    queryKey: ["resumeData", resumeId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("resumes")
+        .select("*")
+        .eq("id", resumeId)
+        .eq("user_id", user?.id)
+        .single();
+      return data;
+    },
+    enabled: !!resumeId && !!user?.id,
+  });
 
   const renderForm = () => {
     switch (activeSection) {
       case ResumeSections.PersonalInformation:
-        return <PersonalDetailsForm resumeId={resumeId as string} />;
+        return (
+          <PersonalDetailsForm
+            resumeId={resumeId as string}
+            resumeData={data}
+          />
+        );
       case ResumeSections.ContactInformation:
         return <ContactInformationForm />;
       case ResumeSections.ProfessionalSummary:
@@ -102,6 +125,8 @@ export default function ResumePage() {
 
   const handleSectionClick = (section: ResumeSections) =>
     setActiveSection(section);
+
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <Grid templateColumns="1fr 3fr 2fr" gap="5">
@@ -165,7 +190,7 @@ export default function ResumePage() {
       <GridItem>
         <Card.Root variant="elevated">
           <Card.Body>
-            <Text>Preview</Text>
+            <ResumePreview resumeData={data} />
           </Card.Body>
         </Card.Root>
       </GridItem>
