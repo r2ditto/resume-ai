@@ -1,42 +1,46 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Heading, Input, SimpleGrid, Text } from "@chakra-ui/react";
 import { Field } from "../ui/field";
 import { supabase } from "@/utils/supabase";
 import { debounce } from "@/utils/helper";
-import { useUser } from "@/contexts/UserContext";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { Toaster, toaster } from "@/components/ui/toaster";
+import { useUser } from "@/contexts/UserContext";
+import { useMutation } from "@tanstack/react-query";
 
 // TODO: Optimistic updates, Error handling, Loading state
 export default function PersonalDetailsForm({
   resumeId,
+  resumeData,
 }: {
   resumeId: string;
+  resumeData: any;
 }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
+  const [firstName, setFirstName] = useState(
+    resumeData?.personal_info?.firstName
+  );
+  const [lastName, setLastName] = useState(resumeData?.personal_info?.lastName);
+  const [jobTitle, setJobTitle] = useState(resumeData?.personal_info?.jobTitle);
   const { user } = useUser();
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["resumeData", resumeId, user?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("resumes")
-        .select("personal_info")
-        .eq("id", resumeId)
-        .eq("user_id", user?.id)
-        .single();
-      return data;
-    },
-  });
+  // const { data, error, isLoading } = useQuery({
+  //   queryKey: ["resumeData", resumeId, user?.id],
+  //   queryFn: async () => {
+  //     const { data } = await supabase
+  //       .from("resumes")
+  //       .select("personal_info")
+  //       .eq("id", resumeId)
+  //       .eq("user_id", user?.id)
+  //       .single();
+  //     return data;
+  //   },
+  // });
 
-  useEffect(() => {
-    if (data) {
-      setFirstName(data.personal_info.firstName);
-      setLastName(data.personal_info.lastName);
-      setJobTitle(data.personal_info.jobTitle);
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     setFirstName(data.personal_info.firstName);
+  //     setLastName(data.personal_info.lastName);
+  //     setJobTitle(data.personal_info.jobTitle);
+  //   }
+  // }, [data]);
 
   const mutation = useMutation({
     mutationFn: async (data: {
@@ -69,6 +73,7 @@ export default function PersonalDetailsForm({
     },
   });
 
+  // TODO: Fix debounced mutation
   const debouncedMutate = useCallback(
     debounce((data) => mutation.mutate(data), 1000),
     [mutation]
@@ -92,9 +97,9 @@ export default function PersonalDetailsForm({
     debouncedMutate({ firstName, lastName, jobTitle: value });
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  // if (isLoading) return <div>Loading...</div>;
 
-  if (error) return <div>Error: {error.message}</div>;
+  // if (error) return <div>Error: {error.message}</div>;
 
   return (
     <>
