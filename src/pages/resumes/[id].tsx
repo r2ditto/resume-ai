@@ -189,9 +189,7 @@ export default function ResumePage() {
       {/* Preview */}
       <GridItem>
         <Card.Root variant="elevated">
-          <Card.Body>
-            <ResumePreview resumeData={data} />
-          </Card.Body>
+          <Card.Body>{data && <ResumePreview resumeData={data} />}</Card.Body>
         </Card.Root>
       </GridItem>
     </Grid>
